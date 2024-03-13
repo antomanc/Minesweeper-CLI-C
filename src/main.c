@@ -3,30 +3,36 @@
 #include <stdlib.h>
 #include "helpers/helpers.h"
 
-#define DEFAULT_SIZE 15
-#define DEFAULT_DIFFICULTY 2
+#define DEFAULT_SIZE "15"
+#define DEFAULT_DIFFICULTY "2"
+#define MAX_BOARD_SIZE 100
 #define INVALID_INPUT_MESSAGE_BOARD_SIZE "Invalid input. Please enter a number.\n"
 #define INVALID_INPUT_MESSAGE_DIFFICULTY "Invalid input. Please enter 1, 2, or 3.\n"
-#define ENTER_BOARD_SIZE_MESSAGE "Please enter the length of the sides of the board (default: 15): "
+#define ENTER_BOARD_SIZE_MESSAGE "Please enter the length of the sides of the board (default 15): "
 #define ENTER_DIFFICULTY_MESSAGE "Please enter the difficulty, easy: 1, medium: 2 (default), hard: 3: "
 #define WELCOME_MESSAGE "Welcome to Minesweeper CLI!\n"
 
 void welcome();
-int getInput(char *message, char *errorMessage, int defaultValue, int (*validator)(int));
-int getBoardSize();
-int getDifficulty();
-int validateBoardSize(int size);
-int validateDifficulty(int difficulty);
-int isNumber(char *input);
+char *getBoardSize();
+char *getDifficulty();
+int validateBoardSize(char *input);
+int validateDifficulty(char *input);
+int calculateNumberOfMines(int totalCells, int difficulty);
 
-int main()
+void main()
 {
+    clearTerminal();
     welcome();
-    int boardSize = getBoardSize();
-    printf("Board size: %d\n", boardSize);
-    int difficulty = getDifficulty();
-    printf("Difficulty: %s\n", difficulty == 1 ? "easy" : (difficulty == 2 ? "medium" : "hard"));
-    return 0;
+    char *boardSize = getBoardSize();
+    int boardSizeInt = atoi(boardSize);
+    clearTerminal();
+    printf("Board size: %s\n", boardSize);
+    char *difficulty = getDifficulty();
+    clearTerminal();
+    int numberOfMines = 0;
+    int totalCells = boardSizeInt * boardSizeInt;
+    numberOfMines = calculateNumberOfMines(totalCells, atoi(difficulty));
+    char **map = generateMap(atoi(boardSize), numberOfMines);
 }
 
 void welcome()
@@ -35,48 +41,35 @@ void welcome()
     return;
 }
 
-int getInput(char *message, char *errorMessage, int defaultValue, int (*validator)(int))
+int calculateNumberOfMines(int totalCells, int difficulty)
 {
-    char input[10];
-    int isInputNumber;
-    printf(message);
-    fgets(input, sizeof(input), stdin);
-    if (input[0] == '\n')
+    switch (difficulty)
     {
-        return defaultValue;
+    case 1:
+        return totalCells * 0.1;
+    case 2:
+        return totalCells * 0.2;
+    case 3:
+        return totalCells * 0.3;
     }
-    input[strcspn(input, "\n")] = 0;
-    isInputNumber = isNumber(input);
-    if (isInputNumber == 0)
-    {
-        printf(errorMessage);
-        return getInput(message, errorMessage, defaultValue, validator);
-    }
-    int value = atoi(input);
-    if (!validator(value))
-    {
-        printf(errorMessage);
-        return getInput(message, errorMessage, defaultValue, validator);
-    }
-    return value;
 }
 
-int getBoardSize()
+char *getBoardSize()
 {
     return getInput(ENTER_BOARD_SIZE_MESSAGE, INVALID_INPUT_MESSAGE_BOARD_SIZE, DEFAULT_SIZE, validateBoardSize);
 }
 
-int getDifficulty()
+char *getDifficulty()
 {
     return getInput(ENTER_DIFFICULTY_MESSAGE, INVALID_INPUT_MESSAGE_DIFFICULTY, DEFAULT_DIFFICULTY, validateDifficulty);
 }
 
-int validateBoardSize(int size)
+int validateBoardSize(char *input)
 {
-    return size > 0;
+    return isNumber(input) && atoi(input) <= MAX_BOARD_SIZE;
 }
 
-int validateDifficulty(int difficulty)
+int validateDifficulty(char *input)
 {
-    return difficulty >= 1 && difficulty <= 3;
+    return isNumber(input) && (atoi(input) == 1 || atoi(input) == 2 || atoi(input) == 3);
 }

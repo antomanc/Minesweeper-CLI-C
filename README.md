@@ -1,6 +1,5 @@
 # Minesweeper CLI C
-This is a command line version of the famous game Minesweeper.
-The game is written in C and uses the standard C library for input/output.
+This is a command line version of the famous game Minesweeper. The game is written in C and uses the standard C library for input/output.
 
 ## Build Instructions
 

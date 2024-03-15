@@ -86,6 +86,9 @@ void calculateNumbers(char **map, int sideLenght)
 // we need to be sure no mines are around and on the first move
 void populateMapWithMinesAndNumbers(char **hiddenMap, int x, int y, int sideLenght, int numberOfMines)
 {
+    // we use the time to generate a random seed
+    srand(time(NULL));
+
     for (int i = 0; i < numberOfMines; i++)
     {
         int randomX = rand() % sideLenght;

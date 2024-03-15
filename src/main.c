@@ -69,7 +69,7 @@ void main()
         }
         else if (action[0] == 'u')
         {
-            visibleMap[x][y] = ' ';
+            visibleMap[x][y] = '0';
         }
         else if (action[0] == 'r')
         {

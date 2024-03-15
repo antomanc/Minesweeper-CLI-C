@@ -4,6 +4,27 @@
 #include "time.h"
 #include "helpers.h"
 
+// this just check if all the cells that are not mines are uncovered
+int checkWin(char **hiddenMap, char **visibleMap, int sideLenght, int numberOfMines)
+{
+    int numberOfUncovered = 0;
+    for (int i = 0; i < sideLenght; i++)
+    {
+        for (int j = 0; j < sideLenght; j++)
+        {
+            if (visibleMap[i][j] != '0' && visibleMap[i][j] != 'F')
+            {
+                numberOfUncovered++;
+            }
+        }
+    }
+    if (numberOfUncovered == sideLenght * sideLenght - numberOfMines)
+    {
+        return 1;
+    }
+    return 0;
+}
+
 // this function is used to get the number of mines around a cell with coordinates x,y in a map
 int getNumberOfMines(char **map, int x, int y, int sideLenght)
 {
@@ -60,16 +81,56 @@ void calculateNumbers(char **map, int sideLenght)
     return;
 }
 
-void makeFirstMove(char **hiddenMap, int x, int y, int sideLenght)
+// this function populate the map with mines and numbers
+// x and y are the coordinates of the first move
+// we need to be sure no mines are around and on the first move
+void populateMapWithMinesAndNumbers(char **hiddenMap, int x, int y, int sideLenght, int numberOfMines)
 {
-    // this function is used to make the first move of the player
-    // if the player hits a mine or a number different than 0, we need to edit the map
+    for (int i = 0; i < numberOfMines; i++)
+    {
+        int randomX = rand() % sideLenght;
+        int randomY = rand() % sideLenght;
+
+        // this is very brute force, but it is the easiest way to do it
+        while (hiddenMap[randomX][randomY] == 'M' || (randomX == x && randomY == y) ||
+               (randomX == x - 1 && randomY == y) || (randomX == x + 1 && randomY == y) ||
+               (randomX == x && randomY == y - 1) || (randomX == x && randomY == y + 1) ||
+               (randomX == x - 1 && randomY == y - 1) || (randomX == x + 1 && randomY == y + 1) ||
+               (randomX == x - 1 && randomY == y + 1) || (randomX == x + 1 && randomY == y - 1))
+        {
+            randomX = rand() % sideLenght;
+            randomY = rand() % sideLenght;
+        }
+
+        hiddenMap[randomX][randomY] = 'M';
+    }
+
+    calculateNumbers(hiddenMap, sideLenght);
+
+    return;
 }
 
-// this function uncover all cells around 0s of a map
+// this function uncover all cells around a 0
+// it uncovers all the cells around a 0, and if there are other 0s around, it uncovers them too
 // it is used when the player does the first move
-char **revealAround(char **hiddenMap, char **visibleMap, int x, int y, int sideLenght)
+void revealZerosAround(char **hiddenMap, char **visibleMap, int x, int y, int sideLenght)
 {
+    // we suppose the x and y are valid coordinates and the cell is a 0
+    for (int i = x - 1; i <= x + 1; i++)
+    {
+        for (int j = y - 1; j <= y + 1; j++)
+        {
+            if (i >= 0 && i < sideLenght && j >= 0 && j < sideLenght && hiddenMap[i][j] == '0' && visibleMap[i][j] == '0')
+            {
+                visibleMap[i][j] = ' ';
+                revealZerosAround(hiddenMap, visibleMap, i, j, sideLenght);
+            }
+            else if (i >= 0 && i < sideLenght && j >= 0 && j < sideLenght && hiddenMap[i][j] != 'M')
+            {
+                visibleMap[i][j] = ' ';
+            }
+        }
+    }
 }
 
 // this function uses ASCII characters and carefull formatting to render the map
@@ -104,7 +165,7 @@ void renderMap(char **hiddenMap, char **visibleMap, int sideLenght)
         {
             if (visibleMap[i][j] == '0')
             {
-                printf("| ? ");
+                printf("|   ");
             }
             else if (visibleMap[i][j] == ' ')
             {
@@ -134,7 +195,9 @@ int checkUncovered(char **hiddenMap, char **visibleMap, int x, int y)
     return 0;
 }
 
-char **generateMap(int sideLenght, int numberOfMines)
+// this function generate a map of sideLenght x sideLenght
+// without adding the mines yet, it just initializes the map with 0s
+char **generateMap(int sideLenght)
 {
     // the map is a square, 2D array of chars
     // we do not check for invalid input here, we assume the input is valid
@@ -157,26 +220,6 @@ char **generateMap(int sideLenght, int numberOfMines)
             map[i][j] = '0';
         }
     }
-
-    // if there are no mines, we return the map
-    // this is useful for the visible map
-    if (numberOfMines == 0)
-    {
-        return map;
-    }
-
-    // we use the current time as a seed for the random number generator
-    srand(time(NULL));
-
-    // we place the mines
-    for (int i = 0; i < numberOfMines; i++)
-    {
-        int x = rand() % sideLenght;
-        int y = rand() % sideLenght;
-        map[x][y] = 'M';
-    }
-
-    calculateNumbers(map, sideLenght);
 
     return map;
 }

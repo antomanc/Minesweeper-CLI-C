@@ -7,13 +7,14 @@
 #define DEFAULT_DIFFICULTY "2"
 #define DEFAULT_ACTION "f 0 0"
 #define MAX_BOARD_SIZE 99
-#define INVALID_INPUT_MESSAGE_BOARD_SIZE "Invalid input. Please enter a number.\n"
+#define MIN_BOARD_SIZE 4
+#define INVALID_INPUT_MESSAGE_BOARD_SIZE "Invalid input. Please enter a number between 4 and 99.\n"
 #define INVALID_INPUT_MESSAGE_DIFFICULTY "Invalid input. Please enter 1, 2, or 3.\n"
+#define INVALID_INPUT_MESSAGE_ACTION "Invalid input. Please enter f, u, r, or q followed by two numbers (e.g. f 1 2).\n"
 #define ENTER_BOARD_SIZE_MESSAGE "Please enter the length of the sides of the board (default 15): "
 #define ENTER_DIFFICULTY_MESSAGE "Please enter the difficulty, easy: 1, medium: 2 (default), hard: 3: "
-#define WELCOME_MESSAGE "Welcome to Minesweeper CLI!\n"
 #define ENTER_ACTION_MESSAGE "Please enter f: Flag, u: Unflag, r: Reveal, q: Quit (e.g. f 1 2): "
-#define INVALID_INPUT_MESSAGE_ACTION "Invalid input. Please enter f, u, r, or q followed by two numbers (e.g. f 1 2).\n"
+#define WELCOME_MESSAGE "Welcome to Minesweeper CLI!\n"
 
 void welcome();
 char *getBoardSize();
@@ -40,12 +41,13 @@ void main()
 
     // the hidden map is the real map that the player can't see
     // with the mines and the numbers
-    char **hiddenMap = generateMap(boardSizeInt, numberOfMines);
-    char **visibleMap = generateMap(boardSizeInt, 0);
+    char **hiddenMap = generateMap(boardSizeInt);
+    char **visibleMap = generateMap(boardSizeInt);
 
     renderMap(hiddenMap, visibleMap, boardSizeInt);
 
     int isFirstReveal = 1;
+    int isGameWon = 0;
     while (1)
     {
         char *action = getAction();
@@ -57,8 +59,9 @@ void main()
         int y = atoi(&action[4]);
         if (isFirstReveal && action[0] == 'r')
         {
-            makeFirstMove(hiddenMap, x, y, boardSizeInt);
-            revealAround(hiddenMap, visibleMap, x, y, boardSizeInt);
+            populateMapWithMinesAndNumbers(hiddenMap, x, y, boardSizeInt, numberOfMines);
+            revealZerosAround(hiddenMap, visibleMap, x, y, boardSizeInt);
+            isFirstReveal = 0;
         }
         else if (action[0] == 'f')
         {
@@ -66,7 +69,7 @@ void main()
         }
         else if (action[0] == 'u')
         {
-            visibleMap[x][y] = '?';
+            visibleMap[x][y] = ' ';
         }
         else if (action[0] == 'r')
         {
@@ -81,20 +84,13 @@ void main()
         }
         clearTerminal();
         renderMap(hiddenMap, visibleMap, boardSizeInt);
-        if (isFirstReveal && action[0] == 'r')
+        isGameWon = checkWin(hiddenMap, visibleMap, boardSizeInt, numberOfMines);
+        if (isGameWon)
         {
-            isFirstReveal = 0;
-        }
-        for (int i = 0; i < boardSizeInt; i++)
-        {
-            for (int j = 0; j < boardSizeInt; j++)
-            {
-                printf("%c ", hiddenMap[i][j]);
-            }
-            printf("\n");
+            printf("Congratulations! You won!\n");
+            break;
         }
     }
-    printf("Goodbye!\n");
 }
 
 void welcome()
@@ -139,7 +135,7 @@ int validateAction(char *input)
 
 int validateBoardSize(char *input)
 {
-    return isNumber(input) && atoi(input) <= MAX_BOARD_SIZE;
+    return isNumber(input) && atoi(input) <= MAX_BOARD_SIZE && atoi(input) >= MIN_BOARD_SIZE;
 }
 
 int validateDifficulty(char *input)

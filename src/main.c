@@ -34,8 +34,9 @@ void main()
     clearTerminal();
     printf("Board size: %s\n", boardSize);
     char *difficulty = getDifficulty();
+
     clearTerminal();
-    int numberOfMines = 0;
+    int numberOfMines;
     int totalCells = boardSizeInt * boardSizeInt;
     numberOfMines = calculateNumberOfMines(totalCells, atoi(difficulty));
 
@@ -43,6 +44,10 @@ void main()
     // with the mines and the numbers
     char **hiddenMap = generateMap(boardSizeInt);
     char **visibleMap = generateMap(boardSizeInt);
+
+    // we free the memory of the inputs since we don't need them anymore
+    free(boardSize);
+    free(difficulty);
 
     renderMap(hiddenMap, visibleMap, boardSizeInt);
 
@@ -82,6 +87,7 @@ void main()
             else
                 visibleMap[x][y] = ' ';
         }
+        free(action);
         clearTerminal();
         renderMap(hiddenMap, visibleMap, boardSizeInt);
         isGameWon = checkWin(hiddenMap, visibleMap, boardSizeInt, numberOfMines);

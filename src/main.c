@@ -24,18 +24,26 @@ char *getBoardSize();
 char *getDifficulty();
 int validateBoardSize(char *input);
 int validateDifficulty(char *input);
+int validateAction(char *input);
 int calculateNumberOfMines(int totalCells, int difficulty);
 
 void main()
 {
     clearTerminal();
+
+    initscr();
+    cbreak();
+
     welcome();
+
     char *boardSize = getBoardSize();
     int boardSizeInt = atoi(boardSize);
     clearTerminal();
-    printf("Board size: %s\n", boardSize);
+    mvprintw(0, 0, "Board size: %s\n", boardSize);
     char *difficulty = getDifficulty();
     clearTerminal();
+    noecho();
+
     int numberOfMines = 0;
     int totalCells = boardSizeInt * boardSizeInt;
     numberOfMines = calculateNumberOfMines(totalCells, atoi(difficulty));
@@ -52,32 +60,30 @@ void main()
     int cursorX = 0;
     int cursorY = 0;
 
-    initscr();
-    cbreak();
-    noecho();
-    keypad(stdscr, TRUE);
-
+    curs_set(0);
     renderMap(hiddenMap, visibleMap, boardSizeInt, cursorX, cursorY);
 
     while (1)
     {
-        char action = getInputV2();
+        char *actionPointer = getInputV2(
+            "", "", DEFAULT_ACTION, validateAction, 1);
+        char action = actionPointer[0];
         if (action == 'q')
         {
             break;
         }
-        else if (action == 'f')
+        else if (action == 'f' || action == 'j')
         {
-            if (visibleMap[cursorX][cursorY] == ' ')
+            if (visibleMap[cursorX][cursorY] == '0')
             {
                 visibleMap[cursorX][cursorY] = 'F';
             }
             else if (visibleMap[cursorX][cursorY] == 'F')
             {
-                visibleMap[cursorX][cursorY] = ' ';
+                visibleMap[cursorX][cursorY] = '0';
             }
         }
-        else if (action == 'r')
+        else if (action == 'r' || action == 'k')
         {
             if (isFirstReveal)
             {
@@ -98,35 +104,34 @@ void main()
                     visibleMap[cursorX][cursorY] = ' ';
             }
         }
-        else if (action == 'w' || action == 'k')
+        else if (action == 'w')
         {
             if (cursorX > 0)
             {
                 cursorX--;
             }
         }
-        else if (action == 'a' || action == 'h')
+        else if (action == 'a')
         {
             if (cursorY > 0)
             {
                 cursorY--;
             }
         }
-        else if (action == 's' || action == 'j')
+        else if (action == 's')
         {
             if (cursorX < boardSizeInt - 1)
             {
                 cursorX++;
             }
         }
-        else if (action == 'd' || action == 'l')
+        else if (action == 'd')
         {
             if (cursorY < boardSizeInt - 1)
             {
                 cursorY++;
             }
         }
-        clearTerminal();
         renderMap(hiddenMap, visibleMap, boardSizeInt, cursorX, cursorY);
         isGameWon = checkWin(hiddenMap, visibleMap, boardSizeInt, numberOfMines);
         if (isGameWon)
@@ -140,7 +145,7 @@ void main()
 
 void welcome()
 {
-    printf(WELCOME_MESSAGE);
+    mvprintw(0, 0, WELCOME_MESSAGE);
     return;
 }
 
@@ -159,12 +164,12 @@ int calculateNumberOfMines(int totalCells, int difficulty)
 
 char *getBoardSize()
 {
-    return getInput(ENTER_BOARD_SIZE_MESSAGE, INVALID_INPUT_MESSAGE_BOARD_SIZE, DEFAULT_SIZE, validateBoardSize);
+    return getInputV2(ENTER_BOARD_SIZE_MESSAGE, INVALID_INPUT_MESSAGE_BOARD_SIZE, DEFAULT_SIZE, validateBoardSize, 0);
 }
 
 char *getDifficulty()
 {
-    return getInput(ENTER_DIFFICULTY_MESSAGE, INVALID_INPUT_MESSAGE_DIFFICULTY, DEFAULT_DIFFICULTY, validateDifficulty);
+    return getInputV2(ENTER_DIFFICULTY_MESSAGE, INVALID_INPUT_MESSAGE_DIFFICULTY, DEFAULT_DIFFICULTY, validateDifficulty, 0);
 }
 
 int validateBoardSize(char *input)
@@ -175,4 +180,9 @@ int validateBoardSize(char *input)
 int validateDifficulty(char *input)
 {
     return isNumber(input) && (atoi(input) == 1 || atoi(input) == 2 || atoi(input) == 3);
+}
+
+int validateAction(char *input)
+{
+    return 1;
 }

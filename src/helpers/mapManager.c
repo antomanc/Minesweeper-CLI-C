@@ -137,71 +137,62 @@ void revealZerosAround(char **hiddenMap, char **visibleMap, int x, int y, int si
     }
 }
 
-// this function uses ASCII characters and carefull formatting to render the map
 void renderMap(char **hiddenMap, char **visibleMap, int sideLenght, int cursorX, int cursorY)
 {
-    // for (int j = 0; j < sideLenght; j++)
-    // {
-    //     printf("+---");
-    // }
-    // printf("+\n");
-    // for (int i = 0; i < sideLenght; i++)
-    // {
-    //     printf("%2d ", i);
-    //     for (int j = 0; j < sideLenght; j++)
-    //     {
-    //         if (visibleMap[i][j] == '0')
-    //         {
-    //             printf("|   ");
-    //         }
-    //         else if (i == cursorX && j == cursorY)
-    //         {
-    //             printf("| \033[1;31m%c\033[0m ", visibleMap[i][j]);
-    //         }
-    //         else if (visibleMap[i][j] == ' ')
-    //         {
-    //             printf("| %c ", hiddenMap[i][j]);
-    //         }
-    //         else
-    //         {
-    //             printf("| %c ", visibleMap[i][j]);
-    //         }
-    //     }
-    //     printf("|\n");
-    //     printf("   ");
-    //     for (int j = 0; j < sideLenght; j++)
-    //     {
-    //         printf("+---");
-    //     }
-    //     printf("+\n");
-    // }
+    // top border
+    for (int j = 0; j < sideLenght; j++)
+    {
+        mvprintw(0, j * 4, "+---");
+    }
+    mvprintw(0, sideLenght * 4, "+");
 
-    // we use ncurses to render the map
     for (int i = 0; i < sideLenght; i++)
     {
+
         for (int j = 0; j < sideLenght; j++)
         {
+            int isCursor = i == cursorX && j == cursorY;
+
+            if (isCursor)
+            {
+                attron(A_REVERSE);
+            }
+
             if (visibleMap[i][j] == '0')
             {
-                mvprintw(i, j * 4, "   ");
-            }
-            else if (i == cursorX && j == cursorY)
-            {
-                attron(A_BOLD);
-                mvprintw(i, j * 4, " %c ", visibleMap[i][j]);
-                attroff(A_BOLD);
+                mvprintw(i * 2 + 1, j * 4 + 1, "   ");
             }
             else if (visibleMap[i][j] == ' ')
             {
-                mvprintw(i, j * 4, " %c ", hiddenMap[i][j]);
+                mvprintw(i * 2 + 1, j * 4 + 1, " %c ", hiddenMap[i][j]);
             }
             else
             {
-                mvprintw(i, j * 4, " %c ", visibleMap[i][j]);
+                // TODO add colors to flags
+                mvprintw(i * 2 + 1, j * 4 + 1, " %c ", visibleMap[i][j]);
             }
+
+            if (isCursor)
+            {
+                attroff(A_REVERSE);
+            }
+
+            // borders
+            if (j == sideLenght - 1)
+            {
+                mvprintw(i * 2 + 1, sideLenght * 4, "|");
+            }
+            mvprintw(i * 2 + 1, j * 4, "|");
         }
+
+        // bottom border
+        for (int j = 0; j < sideLenght; j++)
+        {
+            mvprintw(i * 2 + 2, j * 4, "+---");
+        }
+        mvprintw(i * 2 + 2, sideLenght * 4, "+");
     }
-    mvprintw(sideLenght, 0, "Use WASD or HJKL to move the cursor, R to reveal, F to toggle the flag, Q to quit");
+
     refresh();
 }
 

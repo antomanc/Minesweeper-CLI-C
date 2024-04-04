@@ -3,7 +3,7 @@
 
 int isNumber(char *input);
 char *getInput(char message[], char errorMessage[], char defaultValue[], int (*validator)(char *));
-char getInputV2();
+char *getInputV2(char message[], char errorMessage[], char defaultValue[], int (*validator)(char *), int streamOneChar);
 void clearTerminal();
 char **generateMap(int sideLenght);
 void renderMap(char **hiddenMap, char **visibleMap, int sideLenght, int cursorX, int cursorY);

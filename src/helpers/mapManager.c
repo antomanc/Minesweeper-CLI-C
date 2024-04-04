@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <ncurses.h>
 #include "time.h"
 #include "helpers.h"
 
@@ -137,56 +138,71 @@ void revealZerosAround(char **hiddenMap, char **visibleMap, int x, int y, int si
 }
 
 // this function uses ASCII characters and carefull formatting to render the map
-void renderMap(char **hiddenMap, char **visibleMap, int sideLenght)
+void renderMap(char **hiddenMap, char **visibleMap, int sideLenght, int cursorX, int cursorY)
 {
-    printf("   ");
+    // for (int j = 0; j < sideLenght; j++)
+    // {
+    //     printf("+---");
+    // }
+    // printf("+\n");
+    // for (int i = 0; i < sideLenght; i++)
+    // {
+    //     printf("%2d ", i);
+    //     for (int j = 0; j < sideLenght; j++)
+    //     {
+    //         if (visibleMap[i][j] == '0')
+    //         {
+    //             printf("|   ");
+    //         }
+    //         else if (i == cursorX && j == cursorY)
+    //         {
+    //             printf("| \033[1;31m%c\033[0m ", visibleMap[i][j]);
+    //         }
+    //         else if (visibleMap[i][j] == ' ')
+    //         {
+    //             printf("| %c ", hiddenMap[i][j]);
+    //         }
+    //         else
+    //         {
+    //             printf("| %c ", visibleMap[i][j]);
+    //         }
+    //     }
+    //     printf("|\n");
+    //     printf("   ");
+    //     for (int j = 0; j < sideLenght; j++)
+    //     {
+    //         printf("+---");
+    //     }
+    //     printf("+\n");
+    // }
+
+    // we use ncurses to render the map
     for (int i = 0; i < sideLenght; i++)
     {
-        if (i < 9)
-        {
-            printf("  %d ", i);
-        }
-        else if (i == 9)
-        {
-            printf("  %d ", i);
-        }
-        else
-        {
-            printf("  %d", i);
-        }
-    }
-    printf("\n   ");
-    for (int j = 0; j < sideLenght; j++)
-    {
-        printf("+---");
-    }
-    printf("+\n");
-    for (int i = 0; i < sideLenght; i++)
-    {
-        printf("%2d ", i);
         for (int j = 0; j < sideLenght; j++)
         {
             if (visibleMap[i][j] == '0')
             {
-                printf("|   ");
+                mvprintw(i, j * 4, "   ");
+            }
+            else if (i == cursorX && j == cursorY)
+            {
+                attron(A_BOLD);
+                mvprintw(i, j * 4, " %c ", visibleMap[i][j]);
+                attroff(A_BOLD);
             }
             else if (visibleMap[i][j] == ' ')
             {
-                printf("| %c ", hiddenMap[i][j]);
+                mvprintw(i, j * 4, " %c ", hiddenMap[i][j]);
             }
             else
             {
-                printf("| %c ", visibleMap[i][j]);
+                mvprintw(i, j * 4, " %c ", visibleMap[i][j]);
             }
         }
-        printf("|\n");
-        printf("   ");
-        for (int j = 0; j < sideLenght; j++)
-        {
-            printf("+---");
-        }
-        printf("+\n");
     }
+    mvprintw(sideLenght, 0, "Use WASD or HJKL to move the cursor, R to reveal, F to toggle the flag, Q to quit");
+    refresh();
 }
 
 int checkUncovered(char **hiddenMap, char **visibleMap, int x, int y)

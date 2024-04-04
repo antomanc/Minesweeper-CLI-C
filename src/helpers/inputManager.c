@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <ncurses.h>
 #include "helpers.h"
 
 char *getInput(char message[], char errorMessage[], char defaultValue[], int (*validator)(char *))
@@ -23,7 +24,12 @@ char *getInput(char message[], char errorMessage[], char defaultValue[], int (*v
     return result;
 }
 
+char getInputV2()
+{
+    return getch();
+}
+
 void clearTerminal()
 {
-    printf("\033[H\033[J");
+    system("clear");
 }

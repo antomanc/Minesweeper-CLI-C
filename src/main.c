@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <ncurses.h>
 #include "helpers/helpers.h"
 
 #define DEFAULT_SIZE "15"
@@ -15,14 +16,14 @@
 #define ENTER_DIFFICULTY_MESSAGE "Please enter the difficulty, easy: 1, medium: 2 (default), hard: 3: "
 #define ENTER_ACTION_MESSAGE "Please enter f: Flag, u: Unflag, r: Reveal, q: Quit (e.g. f 1 2): "
 #define WELCOME_MESSAGE "Welcome to Minesweeper CLI!\n"
+#define GAME_OVER_MESSAGE "Game over! You hit a mine.\n"
+#define CONGRATULATIONS_MESSAGE "Congratulations! You won!\n"
 
 void welcome();
 char *getBoardSize();
 char *getDifficulty();
-char *getAction();
 int validateBoardSize(char *input);
 int validateDifficulty(char *input);
-int validateAction(char *input);
 int calculateNumberOfMines(int totalCells, int difficulty);
 
 void main()
@@ -44,50 +45,94 @@ void main()
     char **hiddenMap = generateMap(boardSizeInt);
     char **visibleMap = generateMap(boardSizeInt);
 
-    renderMap(hiddenMap, visibleMap, boardSizeInt);
-
     int isFirstReveal = 1;
     int isGameWon = 0;
+
+    // we initialize the the current position, x and y, of the cursor
+    int cursorX = 0;
+    int cursorY = 0;
+
+    initscr();
+    cbreak();
+    noecho();
+    keypad(stdscr, TRUE);
+
+    renderMap(hiddenMap, visibleMap, boardSizeInt, cursorX, cursorY);
+
     while (1)
     {
-        char *action = getAction();
-        if (action[0] == 'q')
+        char action = getInputV2();
+        if (action == 'q')
         {
             break;
         }
-        int x = atoi(&action[2]);
-        int y = atoi(&action[4]);
-        if (isFirstReveal && action[0] == 'r')
+        else if (action == 'f')
         {
-            populateMapWithMinesAndNumbers(hiddenMap, x, y, boardSizeInt, numberOfMines);
-            revealZerosAround(hiddenMap, visibleMap, x, y, boardSizeInt);
-            isFirstReveal = 0;
-        }
-        else if (action[0] == 'f')
-        {
-            visibleMap[x][y] = 'F';
-        }
-        else if (action[0] == 'u')
-        {
-            visibleMap[x][y] = '0';
-        }
-        else if (action[0] == 'r')
-        {
-            int isThereMine = checkUncovered(hiddenMap, visibleMap, x, y);
-            if (isThereMine)
+            if (visibleMap[cursorX][cursorY] == ' ')
             {
-                printf("Game over! You hit a mine.\n");
-                break;
+                visibleMap[cursorX][cursorY] = 'F';
+            }
+            else if (visibleMap[cursorX][cursorY] == 'F')
+            {
+                visibleMap[cursorX][cursorY] = ' ';
+            }
+        }
+        else if (action == 'r')
+        {
+            if (isFirstReveal)
+            {
+                populateMapWithMinesAndNumbers(hiddenMap, cursorX, cursorY, boardSizeInt, numberOfMines);
+                revealZerosAround(hiddenMap, visibleMap, cursorX, cursorY, boardSizeInt);
+                isFirstReveal = 0;
             }
             else
-                visibleMap[x][y] = ' ';
+            {
+                int isThereMine = checkUncovered(hiddenMap, visibleMap, cursorX, cursorY);
+                if (isThereMine)
+                {
+                    mvprintw(0, 0, GAME_OVER_MESSAGE);
+                    refresh();
+                    break;
+                }
+                else
+                    visibleMap[cursorX][cursorY] = ' ';
+            }
+        }
+        else if (action == 'w' || action == 'k')
+        {
+            if (cursorX > 0)
+            {
+                cursorX--;
+            }
+        }
+        else if (action == 'a' || action == 'h')
+        {
+            if (cursorY > 0)
+            {
+                cursorY--;
+            }
+        }
+        else if (action == 's' || action == 'j')
+        {
+            if (cursorX < boardSizeInt - 1)
+            {
+                cursorX++;
+            }
+        }
+        else if (action == 'd' || action == 'l')
+        {
+            if (cursorY < boardSizeInt - 1)
+            {
+                cursorY++;
+            }
         }
         clearTerminal();
-        renderMap(hiddenMap, visibleMap, boardSizeInt);
+        renderMap(hiddenMap, visibleMap, boardSizeInt, cursorX, cursorY);
         isGameWon = checkWin(hiddenMap, visibleMap, boardSizeInt, numberOfMines);
         if (isGameWon)
         {
-            printf("Congratulations! You won!\n");
+            mvprintw(0, 0, CONGRATULATIONS_MESSAGE);
+            refresh();
             break;
         }
     }
@@ -112,11 +157,6 @@ int calculateNumberOfMines(int totalCells, int difficulty)
     }
 }
 
-char *getAction()
-{
-    return getInput(ENTER_ACTION_MESSAGE, INVALID_INPUT_MESSAGE_ACTION, DEFAULT_ACTION, validateAction);
-}
-
 char *getBoardSize()
 {
     return getInput(ENTER_BOARD_SIZE_MESSAGE, INVALID_INPUT_MESSAGE_BOARD_SIZE, DEFAULT_SIZE, validateBoardSize);
@@ -125,12 +165,6 @@ char *getBoardSize()
 char *getDifficulty()
 {
     return getInput(ENTER_DIFFICULTY_MESSAGE, INVALID_INPUT_MESSAGE_DIFFICULTY, DEFAULT_DIFFICULTY, validateDifficulty);
-}
-
-int validateAction(char *input)
-{
-    return 1;
-    return (input[0] == 'f' || input[0] == 'u' || input[0] == 'r') && (input[1] == ' ' && isNumber(&input[2]) && input[3] == ' ' && isNumber(&input[4]) || input[0] == 'q');
 }
 
 int validateBoardSize(char *input)

@@ -1,5 +1,6 @@
 # Minesweeper CLI C
-This is a command line version of the famous game Minesweeper. The game is written in C and uses the standard C library for input/output.
+This is a command line version of the famous game Minesweeper. The game is written in C and uses the ncurses library for input/output.
+It supports fast WASD movements and J-K keys for toggling a flag and revealing the cell.
 
 ## Build Instructions
 
@@ -27,7 +28,10 @@ Upon starting the game, you will be asked to enter the grid size and difficulty.
 
 During the game, you will have the following options:
 
-- `f x y`: Place a flag on the cell at coordinates (x, y).
-- `u x y`: Remove a flag from the cell at coordinates (x, y).
-- `r x y`: Reveal the cell at coordinates (x, y).
-- `q`: Quit the game.
+- `W` to move the cursor up
+- `A` to move the cursor left
+- `S` to move the cursor down
+- `D` to move the cursor right
+- `J` to toggle a flag on the current cell
+- `K` to reveal the current cell
+- `Q` to quit the game

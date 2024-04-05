@@ -5,10 +5,12 @@
 #include "time.h"
 #include "helpers.h"
 
-// this just check if all the cells that are not mines are uncovered
+// this check if all the cells that are not mines are uncovered,
+// and the other cells are flagged
 int checkWin(char **hiddenMap, char **visibleMap, int sideLenght, int numberOfMines)
 {
     int numberOfUncovered = 0;
+    int numberOfFlagged = 0;
     for (int i = 0; i < sideLenght; i++)
     {
         for (int j = 0; j < sideLenght; j++)
@@ -17,9 +19,13 @@ int checkWin(char **hiddenMap, char **visibleMap, int sideLenght, int numberOfMi
             {
                 numberOfUncovered++;
             }
+            if (visibleMap[i][j] == 'F' && hiddenMap[i][j] == 'M')
+            {
+                numberOfFlagged++;
+            }
         }
     }
-    if (numberOfUncovered == sideLenght * sideLenght - numberOfMines)
+    if ((numberOfUncovered == sideLenght * sideLenght - numberOfMines) && numberOfFlagged == numberOfMines)
     {
         return 1;
     }
@@ -137,7 +143,9 @@ void revealZerosAround(char **hiddenMap, char **visibleMap, int x, int y, int si
     }
 }
 
-void renderMap(char **hiddenMap, char **visibleMap, int sideLenght, int cursorX, int cursorY)
+// this function is used to render the map, we take the cursor coordinates to highlight the cell,
+// and we take a string to display a message at the bottom of the map
+void renderMap(char **hiddenMap, char **visibleMap, int sideLenght, int cursorX, int cursorY, char *message)
 {
     // top border
     for (int j = 0; j < sideLenght; j++)
@@ -192,6 +200,9 @@ void renderMap(char **hiddenMap, char **visibleMap, int sideLenght, int cursorX,
         }
         mvprintw(i * 2 + 2, sideLenght * 4, "+");
     }
+
+    // message
+    mvprintw(sideLenght * 2 + 2, 0, message);
 
     refresh();
 }

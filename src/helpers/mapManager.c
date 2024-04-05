@@ -1,13 +1,16 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <ncurses.h>
 #include "time.h"
 #include "helpers.h"
 
-// this just check if all the cells that are not mines are uncovered
+// this check if all the cells that are not mines are uncovered,
+// and the other cells are flagged
 int checkWin(char **hiddenMap, char **visibleMap, int sideLenght, int numberOfMines)
 {
     int numberOfUncovered = 0;
+    int numberOfFlagged = 0;
     for (int i = 0; i < sideLenght; i++)
     {
         for (int j = 0; j < sideLenght; j++)
@@ -16,9 +19,13 @@ int checkWin(char **hiddenMap, char **visibleMap, int sideLenght, int numberOfMi
             {
                 numberOfUncovered++;
             }
+            if (visibleMap[i][j] == 'F' && hiddenMap[i][j] == 'M')
+            {
+                numberOfFlagged++;
+            }
         }
     }
-    if (numberOfUncovered == sideLenght * sideLenght - numberOfMines)
+    if ((numberOfUncovered == sideLenght * sideLenght - numberOfMines) && numberOfFlagged == numberOfMines)
     {
         return 1;
     }
@@ -136,57 +143,68 @@ void revealZerosAround(char **hiddenMap, char **visibleMap, int x, int y, int si
     }
 }
 
-// this function uses ASCII characters and carefull formatting to render the map
-void renderMap(char **hiddenMap, char **visibleMap, int sideLenght)
+// this function is used to render the map, we take the cursor coordinates to highlight the cell,
+// and we take a string to display a message at the bottom of the map
+void renderMap(char **hiddenMap, char **visibleMap, int sideLenght, int cursorX, int cursorY, char *message)
 {
-    printf("   ");
-    for (int i = 0; i < sideLenght; i++)
-    {
-        if (i < 9)
-        {
-            printf("  %d ", i);
-        }
-        else if (i == 9)
-        {
-            printf("  %d ", i);
-        }
-        else
-        {
-            printf("  %d", i);
-        }
-    }
-    printf("\n   ");
+    // top border
     for (int j = 0; j < sideLenght; j++)
     {
-        printf("+---");
+        mvprintw(0, j * 4, "+---");
     }
-    printf("+\n");
+    mvprintw(0, sideLenght * 4, "+");
+
     for (int i = 0; i < sideLenght; i++)
     {
-        printf("%2d ", i);
+
         for (int j = 0; j < sideLenght; j++)
         {
+            int isCursor = i == cursorX && j == cursorY;
+
+            if (isCursor)
+            {
+                attron(A_REVERSE);
+            }
+
             if (visibleMap[i][j] == '0')
             {
-                printf("|   ");
+                mvprintw(i * 2 + 1, j * 4 + 1, "   ");
             }
             else if (visibleMap[i][j] == ' ')
             {
-                printf("| %c ", hiddenMap[i][j]);
+                mvprintw(i * 2 + 1, j * 4 + 1, " %c ", hiddenMap[i][j]);
             }
             else
             {
-                printf("| %c ", visibleMap[i][j]);
+                // TODO add colors to flags
+                mvprintw(i * 2 + 1, j * 4 + 1, " %c ", visibleMap[i][j]);
             }
+
+            if (isCursor)
+            {
+                attroff(A_REVERSE);
+            }
+
+            // borders
+            if (j == sideLenght - 1)
+            {
+                mvprintw(i * 2 + 1, sideLenght * 4, "|");
+            }
+            mvprintw(i * 2 + 1, j * 4, "|");
         }
-        printf("|\n");
-        printf("   ");
+
+        // bottom border
         for (int j = 0; j < sideLenght; j++)
         {
-            printf("+---");
+            mvprintw(i * 2 + 2, j * 4, "+---");
         }
-        printf("+\n");
+        mvprintw(i * 2 + 2, sideLenght * 4, "+");
     }
+
+    // message
+    mvprintw(sideLenght * 2 + 2, 0, message);
+
+    refresh();
 }
 
 int checkUncovered(char **hiddenMap, char **visibleMap, int x, int y)

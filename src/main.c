@@ -37,10 +37,12 @@ void main()
     int boardSizeInt = atoi(boardSize);
     mvprintw(0, 0, "Board size: %s\n", boardSize);
     char *difficulty = getDifficulty();
+
     clearTerminal();
     noecho();
+  
+    int numberOfMines;
 
-    int numberOfMines = 0;
     int totalCells = boardSizeInt * boardSizeInt;
     numberOfMines = calculateNumberOfMines(totalCells, atoi(difficulty));
 
@@ -48,6 +50,9 @@ void main()
     // with the mines and the numbers
     char **hiddenMap = generateMap(boardSizeInt);
     char **visibleMap = generateMap(boardSizeInt);
+
+    free(boardSize);
+    free(difficulty);
 
     int isFirstReveal = 1;
     int isGameWon = 0;
@@ -140,12 +145,15 @@ void main()
                 cursorY++;
             }
         }
+
         isGameWon = checkWin(hiddenMap, visibleMap, boardSizeInt, numberOfMines);
         if (isGameWon)
         {
             renderMap(hiddenMap, visibleMap, boardSizeInt, cursorX, cursorY, CONGRATULATIONS_MESSAGE);
             break;
         }
+      
+        free(action);
         renderMap(hiddenMap, visibleMap, boardSizeInt, cursorX, cursorY, "");
     }
     return;

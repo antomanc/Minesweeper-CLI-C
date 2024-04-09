@@ -9,7 +9,7 @@ To build the project, you will need a C compiler such as gcc.
 After installing gcc, navigate with the terminal inside the main folder of the project, then you can compile the project with the following command:
 
 ```bash
-gcc src/main.c src/helpers/isNumber.c src/helpers/inputManager.c src/helpers/mapManager.c -o build/minesweeper
+gcc src/main.c src/helpers/isNumber.c src/helpers/inputManager.c src/helpers/mapManager.c -lncurses -o build/minesweeper
 ```
 
 This command compiles all the needed files and generates an executable called `minesweeper` in the build directory.

@@ -153,7 +153,7 @@ void main()
             break;
         }
       
-        free(action);
+        free(actionPointer);
         renderMap(hiddenMap, visibleMap, boardSizeInt, cursorX, cursorY, "");
     }
     return;

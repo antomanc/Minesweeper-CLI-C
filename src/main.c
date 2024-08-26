@@ -31,6 +31,20 @@ void main()
 {
 
     initscr();
+    if (has_colors())
+    {
+        use_default_colors();
+        start_color();
+        init_pair(1, COLOR_WHITE, -1);   // default text color
+        init_pair(2, COLOR_RED, -1);     // mines ('M')
+        init_pair(3, COLOR_YELLOW, -1);  // numbers 1-3
+        init_pair(4, COLOR_GREEN, -1);   // numbers 4-6
+        init_pair(5, COLOR_CYAN, -1);    // numbers 7-8
+        init_pair(6, COLOR_MAGENTA, -1); // flags ('F')
+        init_pair(7, COLOR_BLUE, -1);    // additional color 1
+        init_pair(8, COLOR_CYAN, -1);    // additional color 2
+        init_pair(9, COLOR_MAGENTA, -1); // additional color 3
+    }
     cbreak();
 
     char *boardSize = getBoardSize();
@@ -40,7 +54,7 @@ void main()
 
     clearTerminal();
     noecho();
-  
+
     int numberOfMines;
 
     int totalCells = boardSizeInt * boardSizeInt;
@@ -152,7 +166,7 @@ void main()
             renderMap(hiddenMap, visibleMap, boardSizeInt, cursorX, cursorY, CONGRATULATIONS_MESSAGE);
             break;
         }
-      
+
         free(actionPointer);
         renderMap(hiddenMap, visibleMap, boardSizeInt, cursorX, cursorY, "");
     }

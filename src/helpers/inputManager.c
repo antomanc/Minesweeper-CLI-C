@@ -19,7 +19,16 @@ char *getInput(char message[], char errorMessage[], char defaultValue[], int (*v
         printw("%s", input);
         if (input[0] == '\0')
         {
-            return defaultValue;
+            if (defaultValue == NULL)
+            {
+                return NULL;
+            }
+            else
+            {
+                char *result = malloc(sizeof(char) * (strlen(defaultValue) + 1));
+                strcpy(result, defaultValue);
+                return result;
+            }
         }
         input[strcspn(input, "\n")] = 0;
 

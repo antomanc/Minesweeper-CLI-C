@@ -146,6 +146,7 @@ void revealZerosAround(char **hiddenMap, char **visibleMap, int x, int y, int si
 // this function is used to render the map, we take the cursor coordinates to highlight the cell,
 // and we take a string to display a message at the bottom of the map
 void renderMap(char **hiddenMap, char **visibleMap, int sideLenght, int cursorX, int cursorY, char *message)
+
 {
     // top border
     for (int j = 0; j < sideLenght; j++)
@@ -156,7 +157,6 @@ void renderMap(char **hiddenMap, char **visibleMap, int sideLenght, int cursorX,
 
     for (int i = 0; i < sideLenght; i++)
     {
-
         for (int j = 0; j < sideLenght; j++)
         {
             int isCursor = i == cursorX && j == cursorY;
@@ -172,11 +172,43 @@ void renderMap(char **hiddenMap, char **visibleMap, int sideLenght, int cursorX,
             }
             else if (visibleMap[i][j] == ' ')
             {
+                // color numbers based on their value
+                int num = hiddenMap[i][j] - '0';
+                if (num == 0)
+                {
+                    attron(COLOR_PAIR(1));
+                }
+                else if (num >= 1 && num <= 3)
+                {
+                    attron(COLOR_PAIR(7));
+                }
+                else if (num >= 4 && num <= 6)
+                {
+                    attron(COLOR_PAIR(8));
+                }
+                else if (num >= 7)
+                {
+                    attron(COLOR_PAIR(9));
+                }
                 mvprintw(i * 2 + 1, j * 4 + 1, " %c ", hiddenMap[i][j]);
+                attroff(COLOR_PAIR(7));
+                attroff(COLOR_PAIR(8));
+                attroff(COLOR_PAIR(9));
+            }
+            else if (visibleMap[i][j] == 'F')
+            {
+                attron(COLOR_PAIR(6));
+                mvprintw(i * 2 + 1, j * 4 + 1, " F ");
+                attroff(COLOR_PAIR(6));
+            }
+            else if (hiddenMap[i][j] == 'M' && visibleMap[i][j] != 'F')
+            {
+                attron(COLOR_PAIR(2));
+                mvprintw(i * 2 + 1, j * 4 + 1, " M ");
+                attroff(COLOR_PAIR(2));
             }
             else
             {
-                // TODO add colors to flags
                 mvprintw(i * 2 + 1, j * 4 + 1, " %c ", visibleMap[i][j]);
             }
 

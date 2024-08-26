@@ -1,4 +1,6 @@
 # Minesweeper CLI C
+![image](https://github.com/user-attachments/assets/20277573-dd86-4e4e-8303-d4fe6c62e044)
+
 This is a command line version of the famous game Minesweeper. The game is written in C and uses the ncurses library for input/output.
 It supports fast WASD movements and J-K keys for toggling a flag and revealing the cell.
 
